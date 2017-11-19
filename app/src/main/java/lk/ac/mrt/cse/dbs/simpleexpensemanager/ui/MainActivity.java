@@ -28,6 +28,8 @@ import android.support.v7.widget.Toolbar;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.R;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.control.ExpenseManager;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.control.InMemoryDemoExpenseManager;
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.control.PersistentExpenseManager;
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.DBHelper;
 
 public class MainActivity extends AppCompatActivity {
     private ExpenseManager expenseManager;
@@ -65,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
 
         /***  Begin generating dummy data for In-Memory implementation  ***/
-        expenseManager = new InMemoryDemoExpenseManager();
+        expenseManager = new PersistentExpenseManager(this);
+        //expenseManager = new InMemoryDemoExpenseManager();
         /*** END ***/
     }
 
@@ -115,4 +118,30 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(expenseManager instanceof PersistentExpenseManager){
+            ((PersistentExpenseManager) expenseManager).dbHelper.close();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(expenseManager instanceof PersistentExpenseManager){
+            ((PersistentExpenseManager) expenseManager).dbHelper.close();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(expenseManager instanceof PersistentExpenseManager){
+            ((PersistentExpenseManager) expenseManager).dbHelper = new DBHelper(this);
+        }
+    }
+
+
 }
